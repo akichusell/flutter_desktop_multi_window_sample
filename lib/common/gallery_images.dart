@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 
 const _folder = 'assets/images/';
-const _extensions = ['.jpg', '.jpeg', '.png', '.webp'];
+const _extensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
 
 /// `assets/images/` 안의 이미지 경로 목록. 경로 자체를 이미지 id로 쓴다.
 /// (실서비스라면 서버에서 받아 올 목록이라는 가정)
