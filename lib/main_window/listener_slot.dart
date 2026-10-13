@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../common/demo_flags.dart';
 import '../common/log.dart';
 
-/// 리스너를 딱 1개만 담는 슬롯 ("현재 활성 리스너"). Slide 9.
+/// 리스너를 딱 1개만 담는 슬롯 ("현재 활성 리스너").
 ///
 /// 위젯이 교체되면 새 위젯 `initState`(register)가 옛 위젯 `dispose`(unregister)보다 먼저 실행된다.
 /// 그래서 unregister가 무조건 슬롯을 비우면, 방금 등록된 새 리스너가 지워진다.

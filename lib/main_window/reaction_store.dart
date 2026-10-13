@@ -17,7 +17,7 @@ class ReactionStore extends ChangeNotifier {
   String? get lastReactedImageId => _lastReactedImageId;
   String? _lastReactedImageId;
 
-  /// 강조 위젯이 등록하는 1개짜리 리스너 슬롯. Slide 9.
+  /// 강조 위젯이 등록하는 1개짜리 리스너 슬롯.
   final lastReactedSlot = ListenerSlot<Reaction>('lastReacted');
 
   List<Reaction> reactionsOf(String imageId) {
@@ -32,7 +32,7 @@ class ReactionStore extends ChangeNotifier {
     for (final e in _byImage.entries) e.key: {...e.value},
   });
 
-  /// 서브 엔진들이 호출하는 핸들러. 앱 시작 시 한 번만 등록한다. Slide 4.
+  /// 서브 엔진들이 호출하는 핸들러. 앱 시작 시 한 번만 등록한다.
   Future<void> serve() async {
     await reactionStoreChannel.setMethodCallHandler((call) async {
       switch (call.method) {

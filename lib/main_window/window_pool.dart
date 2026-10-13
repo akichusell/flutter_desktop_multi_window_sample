@@ -19,7 +19,7 @@ class _SubWindow {
   bool hidden = false;
 }
 
-/// 서브 창 풀. 창 풀의 소유자는 메인이다. Slide 7.
+/// 서브 창 풀. 창 풀의 소유자는 메인이다.
 /// - 상세 창: 이미지마다 1개. X는 hide, 같은 이미지를 다시 열면 숨겨 둔 창을 show.
 /// - 카테고리 창: 1개를 재사용. 다른 리액션을 열면 init으로 내용만 바꾼다.
 class WindowPool {

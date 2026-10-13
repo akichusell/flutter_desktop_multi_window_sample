@@ -33,7 +33,7 @@ Future<SubWindowState> setUpSubWindow(WindowController controller, WindowArgs ar
 
   // 2) 이 엔진에 등록된 window_manager는 자기 창만 제어한다.
   await windowManager.ensureInitialized();
-  await windowManager.setPreventClose(kReuseWindows); // Slide 7: X를 눌러도 닫지 않는다
+  await windowManager.setPreventClose(kReuseWindows);
   windowManager.addListener(_CloseToHide(controller.windowId));
   await windowManager.setTitle(_titleOf(args));
   await windowManager.setSize(args is DetailArgs ? const Size(820, 680) : const Size(900, 640));
@@ -67,7 +67,7 @@ void _closeForShutdown() {
   });
 }
 
-/// X를 눌러도 닫지 않고 숨긴다. Slide 7.
+/// X를 눌러도 닫지 않고 숨긴다.
 /// 네이티브(X) → Dart(onWindowClose) → 네이티브(hide) 왕복이라 창이 사라지기까지 지연이 있다.
 class _CloseToHide with WindowListener {
   _CloseToHide(this._windowId);
