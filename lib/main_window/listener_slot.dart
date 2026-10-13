@@ -26,7 +26,7 @@ class ListenerSlot<T> {
       log('slot', 'unregister $name by $owner BLOCKED by guard (owner is $_owner)');
       return;
     }
-    log('slot', 'unregister $name by $owner${identical(_owner, owner) ? '' : ' (!!! erased $_owner)'}');
+    log('slot', 'unregister $name by $owner${identical(_owner, owner) ? '' : ' (warning! erased $_owner)'}');
     _owner = null;
     _listener = null;
   }
