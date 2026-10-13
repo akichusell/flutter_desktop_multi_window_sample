@@ -9,6 +9,7 @@ import '../common/channels.dart';
 import '../common/demo_flags.dart';
 import '../common/gallery_images.dart';
 import '../common/log.dart';
+import '../common/ui.dart';
 import 'sub_window_state.dart';
 
 /// 서브 엔진 초기화. 상세·카테고리 창이 같은 순서로 시작한다.
@@ -36,7 +37,9 @@ Future<SubWindowState> setUpSubWindow(WindowController controller, WindowArgs ar
   await windowManager.setPreventClose(kReuseWindows);
   windowManager.addListener(_CloseToHide(controller.windowId));
   await windowManager.setTitle(_titleOf(args));
-  await windowManager.setSize(args is DetailArgs ? const Size(820, 680) : const Size(900, 640));
+  final isDetail = args is DetailArgs;
+  await windowManager.setSize(isDetail ? kDetailWindowSize : kCategoryWindowSize);
+  await windowManager.setMinimumSize(isDetail ? kDetailWindowMinSize : kCategoryWindowMinSize);
   await windowManager.center();
 
   await state.fetchAll();

@@ -56,7 +56,15 @@ class ReactionBadges extends StatelessWidget {
   }
 }
 
-/// 이미지 그리드. 창 너비에 따라 열 수가 바뀐다.
+/// 창 크기. 메인 > 카테고리 > 상세 순으로 작게 열고, 그리드 창의 최소 크기는 4열 타일이 너무 작아지지 않게 정한다.
+const kMainWindowSize = Size(1100, 780);
+const kMainWindowMinSize = Size(720, 540);
+const kCategoryWindowSize = Size(960, 680);
+const kCategoryWindowMinSize = Size(640, 480);
+const kDetailWindowSize = Size(640, 500);
+const kDetailWindowMinSize = Size(480, 400);
+
+/// 이미지 그리드. 열 수를 고정해 창 크기에 비례해서 타일이 연속적으로 커지고 작아진다.
 class ImageGrid extends StatelessWidget {
   const ImageGrid({super.key, required this.itemCount, required this.itemBuilder});
 
@@ -67,8 +75,8 @@ class ImageGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return GridView.builder(
       padding: const EdgeInsets.all(20),
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 260,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 4,
         mainAxisSpacing: 16,
         crossAxisSpacing: 16,
         childAspectRatio: 4 / 3,

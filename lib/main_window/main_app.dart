@@ -21,7 +21,8 @@ Future<MainApp> setUpMainWindow() async {
 
   await windowManager.ensureInitialized();
   await windowManager.setTitle('Multi Window Sample');
-  await windowManager.setSize(const Size(1100, 780));
+  await windowManager.setSize(kMainWindowSize);
+  await windowManager.setMinimumSize(kMainWindowMinSize);
   await windowManager.setPreventClose(true); // 닫기 전에 서브 엔진부터 정리한다
   windowManager.addListener(_QuitOnMainClose(pool));
 
