@@ -2,10 +2,9 @@
 # 서브 창을 열고 닫으면서 REUSE_WINDOWS=true/false의 차이를 본다.
 #   tool\watch_threads.bat
 #
-# 스레드는 시작 함수가 들어 있는 DLL별로 나눠 센다.
-#   flutter_windows   Flutter 엔진 + Dart VM
-#   nvwgf2umx 등      GPU 드라이버 (ANGLE → Direct3D 11)
-#   ntdll             Windows 스레드 풀 워커
+# 그중 시작 함수가 아래 모듈에 있는 스레드 수를 따로 센다. 나머지는 GPU 드라이버·OS 스레드다.
+#   flutter_windows       Flutter 엔진 + Dart VM
+#   multi_window_sample   앱 exe (메인 스레드)
 
 Add-Type @"
 using System;
@@ -28,17 +27,24 @@ public static class ThreadStart {
 }
 "@
 
+$watchedModules = 'flutter_windows', 'multi_window_sample'
+
 function Get-ThreadsByModule($p) {
   $modules = foreach ($m in $p.Modules) {
+    $name = [IO.Path]::GetFileNameWithoutExtension($m.ModuleName)
+    if ($watchedModules -notcontains $name) { continue }
     $base = $m.BaseAddress.ToInt64()
-    [pscustomobject]@{ Name = [IO.Path]::GetFileNameWithoutExtension($m.ModuleName); Base = $base; End = $base + $m.ModuleMemorySize }
+    [pscustomobject]@{ Name = $name; Base = $base; End = $base + $m.ModuleMemorySize }
   }
-  $names = foreach ($t in $p.Threads) {
+  $counts = @{}
+  foreach ($name in $watchedModules) { $counts[$name] = 0 }
+  foreach ($t in $p.Threads) {
     $address = [ThreadStart]::Of($t.Id)
-    $module = $modules | Where-Object { $address -ge $_.Base -and $address -lt $_.End } | Select-Object -First 1
-    if ($module) { $module.Name } else { '?' }
+    foreach ($m in $modules) {
+      if ($address -ge $m.Base -and $address -lt $m.End) { $counts[$m.Name]++; break }
+    }
   }
-  ($names | Group-Object | Sort-Object @{ e = 'Count'; Descending = $true }, Name | ForEach-Object { "$($_.Name)=$($_.Count)" }) -join ' '
+  ($watchedModules | ForEach-Object { "$_=$($counts[$_])" }) -join ' '
 }
 
 while ($true) {
