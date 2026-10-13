@@ -267,11 +267,12 @@ packages:
   window_manager:
     dependency: "direct main"
     description:
-      name: window_manager
-      sha256: "05c231fd7b23d2380f14c5cc10b7b93d60d4fa4a2fb4e0f032de27e44b5560e9"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.5.2"
+      path: "packages/window_manager"
+      ref: "6fae92d21b4c80ce1b8f71c1190d7970cf722bd4"
+      resolved-ref: "6fae92d21b4c80ce1b8f71c1190d7970cf722bd4"
+      url: "https://github.com/boyan01/window_manager.git"
+    source: git
+    version: "0.5.1"
 sdks:
   dart: ">=3.11.1 <4.0.0"
   flutter: ">=3.18.0-18.0.pre.54"
