@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ui' show Offset;
 
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/foundation.dart';
@@ -27,6 +28,7 @@ abstract final class Method {
 
   // 각 서브 창의 WindowController 채널 (메인 → 서브)
   static const init = 'init';
+  static const moveToScreen = 'moveToScreen';
   static const reactionsChanged = 'reactionsChanged';
   static const shutdown = 'shutdown';
 }
@@ -42,10 +44,18 @@ sealed class WindowArgs {
 
   Map<String, dynamic> toJson();
 
-  String encode() => jsonEncode(toJson());
+  /// [anchor]는 창 생성 시에만 `anchor` 키로 붙는다. fromJson은 이 키를 보지 않는다.
+  String encode({ScreenAnchor? anchor}) => jsonEncode({...toJson(), 'anchor': ?anchor?.toJson()});
 
   /// 빈 문자열이면 null(= 메인 창).
   static WindowArgs? decode(String raw) => raw.isEmpty ? null : fromJson(jsonDecode(raw) as Map<String, dynamic>);
+
+  /// 창 arguments의 `anchor`. 메인 창이거나 키가 없으면 null.
+  static ScreenAnchor? anchorOf(String raw) {
+    if (raw.isEmpty) return null;
+    final anchor = (jsonDecode(raw) as Map<String, dynamic>)['anchor'];
+    return anchor is Map ? ScreenAnchor.fromJson(Map<String, dynamic>.from(anchor)) : null;
+  }
 
   static WindowArgs fromJson(Map<String, dynamic> json) => switch (json['type']) {
     'detail' => DetailArgs(json['imageId'] as String),
@@ -95,6 +105,20 @@ class ToggleRequest {
 
   factory ToggleRequest.fromJson(Map<String, dynamic> json) =>
       ToggleRequest(json['imageId'] as String, Reaction.fromName(json['reaction'] as String));
+}
+
+/// 서브 창을 띄울 모니터의 기준점 = 메인 창 중심: `{"x": 640.0, "y": 400.0}`
+/// 생성 시에는 창 arguments의 `anchor`로, 숨긴 창을 다시 보여 줄 때는 `moveToScreen` 페이로드로 넘긴다.
+@immutable
+class ScreenAnchor {
+  const ScreenAnchor(this.point);
+
+  final Offset point;
+
+  Map<String, dynamic> toJson() => {'x': point.dx, 'y': point.dy};
+
+  factory ScreenAnchor.fromJson(Map<String, dynamic> json) =>
+      ScreenAnchor(Offset((json['x'] as num).toDouble(), (json['y'] as num).toDouble()));
 }
 
 /// 리액션 전체 상태의 읽기 전용 사본: `{"assets/images/a.jpg": ["heart", "like"], ...}`

@@ -11,6 +11,7 @@ import '../common/gallery_images.dart';
 import '../common/log.dart';
 import '../common/ui.dart';
 import 'sub_window_state.dart';
+import 'window_placement.dart';
 
 /// 서브 엔진 초기화. 상세·카테고리 창이 같은 순서로 시작한다.
 Future<SubWindowState> setUpSubWindow(WindowController controller, WindowArgs args) async {
@@ -22,6 +23,9 @@ Future<SubWindowState> setUpSubWindow(WindowController controller, WindowArgs ar
       case Method.init:
         await state.onInit(WindowArgs.fromJson(Map<String, dynamic>.from(call.arguments as Map)));
         await windowManager.setTitle(_titleOf(state.args));
+      case Method.moveToScreen:
+        final anchor = ScreenAnchor.fromJson(Map<String, dynamic>.from(call.arguments as Map));
+        await moveToScreenOf(anchor.point, onlyIfElsewhere: true);
       case Method.reactionsChanged:
         state.onReactionsChanged(Map<String, dynamic>.from(call.arguments as Map));
       case Method.shutdown:
@@ -40,7 +44,9 @@ Future<SubWindowState> setUpSubWindow(WindowController controller, WindowArgs ar
   final isDetail = args is DetailArgs;
   await windowManager.setSize(isDetail ? kDetailWindowSize : kCategoryWindowSize);
   await windowManager.setMinimumSize(isDetail ? kDetailWindowMinSize : kCategoryWindowMinSize);
-  await windowManager.center();
+  // 메인 창이 있는 모니터 가운데. center()는 마우스 커서가 있는 모니터 기준이라 쓰지 않는다.
+  final anchor = WindowArgs.anchorOf(controller.arguments);
+  await (anchor == null ? windowManager.center() : moveToScreenOf(anchor.point));
 
   await state.fetchAll();
   return state;

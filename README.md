@@ -51,7 +51,7 @@ flowchart LR
 
 - 메인 창은 `WindowController.fromCurrentEngine().arguments`가 빈 문자열이다.
 - 서브 창은 만들 때 `arguments`에 JSON을 넣는다: `{"type":"detail","imageId":"assets/images/sunset.jpg"}`,
-  `{"type":"category","reaction":"heart"}`.
+  `{"type":"category","reaction":"heart"}`. 생성 시에는 메인 창 중심 좌표 `anchor`(`{"x":..,"y":..}`)도 함께 넣는다.
 
 → `lib/main.dart` `main()`, `lib/common/channels.dart` `WindowArgs`
 
@@ -64,7 +64,7 @@ flowchart LR
 | --- | --- | --- | --- | --- |
 | `reaction_store` | 메인 | unidirectional | 서브 | `getAll`, `toggle` |
 | `window_router` | 메인 | unidirectional | 서브 | `openDetail`, `windowHidden` |
-| 각 서브 창의 `WindowController` 채널 | 서브 | 패키지 기본 | 메인 | `init`, `reactionsChanged`, `shutdown` |
+| 각 서브 창의 `WindowController` 채널 | 서브 | 패키지 기본 | 메인 | `init`, `moveToScreen`, `reactionsChanged`, `shutdown` |
 
 - 엔진 경계를 넘는 값은 `Map`·`List`·`String`뿐이다. 객체는 `toJson()`으로 보내고, 받는 쪽에서
   `Map<String, dynamic>.from(...)`으로 바꾼 뒤 `fromJson()`한다.
@@ -85,7 +85,15 @@ flowchart LR
 - X를 숨김으로 바꾸려면 window_manager의 `setPreventClose(true)`를 켜고 `onWindowClose`에서 `hide()`를 부른다.
   이 경로는 네이티브(X) → Dart → 네이티브(hide)를 한 번 왕복한다.
 
-→ `sub_window/sub_bootstrap.dart` `_CloseToHide`, `showAfterFirstFrame`, `main_window/window_pool.dart` `_reshow`
+- 서브 창은 메인 창이 있는 모니터 가운데에 뜬다. `windowManager.center()`는 마우스 커서가 있는 모니터 기준이라 쓰지 않는다.
+  - 생성: 메인이 자기 창 중심을 `anchor`로 넘기고, 서브가 screen_retriever로 그 점을 포함한 모니터의 작업 영역을 찾아
+    가운데로 옮긴 뒤 보여 준다.
+  - 재사용: 메인이 `show()` 전에 `moveToScreen`을 보낸다. 서브가 이미 메인 모니터에 있으면 사용자가 둔 위치를 유지하고,
+    다른 모니터에 있을 때만 메인 모니터 가운데로 옮긴다.
+  - window_manager·screen_retriever 모두 주 모니터 좌상단 기준 논리 좌표를 쓰므로 플러그인 수정 없이 Dart에서 처리한다.
+
+→ `sub_window/sub_bootstrap.dart` `_CloseToHide`, `showAfterFirstFrame`, `main_window/window_pool.dart` `_reshow`,
+`sub_window/window_placement.dart` `moveToScreenOf`
 
 ### 4. 플러그인은 엔진마다 다시 등록한다
 
@@ -203,5 +211,6 @@ window_manager의 `destroy()`는 macOS에서 `NSApp.terminate`, Windows에서 `P
 | --- | --- | --- |
 | [`desktop_multi_window`](https://pub.dev/packages/desktop_multi_window) | 0.3.1 | pub.dev 원본 |
 | [`window_manager`](https://github.com/boyan01/window_manager) | 0.5.1 + 누수 수정 | 포크 고정 커밋 ([체크 포인트](#체크-포인트) 참고) |
+| [`screen_retriever`](https://pub.dev/packages/screen_retriever) | ^0.2.2 | window_manager 의존성. 모니터 작업 영역 조회 |
 
 
