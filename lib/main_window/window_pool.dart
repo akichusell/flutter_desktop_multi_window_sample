@@ -69,7 +69,7 @@ class WindowPool {
   }
 
   /// 새 엔진을 띄운다. 창은 숨긴 채로 만들고, 서브가 첫 프레임 후 스스로 show한다.
-  /// 메인 창 중심을 arguments에 넣어 서브가 메인과 같은 모니터 가운데에 자리 잡게 한다.
+  /// 메인 창 영역을 arguments에 넣어 서브가 메인 옆에 자리 잡게 한다.
   _SubWindow _create(WindowArgs args) {
     final stopwatch = Stopwatch()..start();
     final ready = _mainAnchor().then(
@@ -83,11 +83,11 @@ class WindowPool {
   }
 
   /// 숨겨 둔 창 재사용: 엔진을 새로 띄우지 않고 show만 한다.
-  /// 그사이 메인이 다른 모니터로 옮겨 갔으면 서브도 메인 모니터로 데려온다.
+  /// 숨기기 전 자리에 그대로 보이지 않고, 지금 메인 창 위치 기준으로 다시 자리 잡는다.
   Future<void> _reshow(_SubWindow window) async {
     final controller = await window.ready;
     if (window.hidden && !kPushToHiddenWindows) await _push([window]); // 숨어 있는 동안 못 받은 변경
-    await _invoke(window, Method.moveToScreen, (await _mainAnchor()).toJson());
+    await _invoke(window, Method.placeBesideMain, (await _mainAnchor()).toJson());
     window.hidden = false;
     await controller.show();
     log('lifecycle', 'reuse show ${window.args.tag} (window ${controller.windowId})');
@@ -123,7 +123,7 @@ class WindowPool {
   // ── 내부 ─────────────────────────────────────────────────────────────
 
   /// 이 엔진의 windowManager는 메인 창을 가리킨다.
-  Future<ScreenAnchor> _mainAnchor() async => ScreenAnchor((await windowManager.getBounds()).center);
+  Future<ScreenAnchor> _mainAnchor() async => ScreenAnchor(await windowManager.getBounds());
 
   Future<void> _invoke(_SubWindow window, String method, [Object? arguments]) async {
     try {

@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:ui' show Offset;
+import 'dart:ui' show Rect;
 
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/foundation.dart';
@@ -28,7 +28,7 @@ abstract final class Method {
 
   // 각 서브 창의 WindowController 채널 (메인 → 서브)
   static const init = 'init';
-  static const moveToScreen = 'moveToScreen';
+  static const placeBesideMain = 'placeBesideMain';
   static const reactionsChanged = 'reactionsChanged';
   static const shutdown = 'shutdown';
 }
@@ -107,18 +107,21 @@ class ToggleRequest {
       ToggleRequest(json['imageId'] as String, Reaction.fromName(json['reaction'] as String));
 }
 
-/// 서브 창을 띄울 모니터의 기준점 = 메인 창 중심: `{"x": 640.0, "y": 400.0}`
-/// 생성 시에는 창 arguments의 `anchor`로, 숨긴 창을 다시 보여 줄 때는 `moveToScreen` 페이로드로 넘긴다.
+/// 서브 창 위치의 기준 = 메인 창 영역: `{"x": 100.0, "y": 80.0, "width": 840.0, "height": 630.0}`
+/// 생성 시에는 창 arguments의 `anchor`로, 숨긴 창을 다시 보여 줄 때는 `placeBesideMain` 페이로드로 넘긴다.
 @immutable
 class ScreenAnchor {
-  const ScreenAnchor(this.point);
+  const ScreenAnchor(this.bounds);
 
-  final Offset point;
+  final Rect bounds;
 
-  Map<String, dynamic> toJson() => {'x': point.dx, 'y': point.dy};
+  Map<String, dynamic> toJson() => {'x': bounds.left, 'y': bounds.top, 'width': bounds.width, 'height': bounds.height};
 
-  factory ScreenAnchor.fromJson(Map<String, dynamic> json) =>
-      ScreenAnchor(Offset((json['x'] as num).toDouble(), (json['y'] as num).toDouble()));
+  factory ScreenAnchor.fromJson(Map<String, dynamic> json) => ScreenAnchor(
+    Rect.fromLTWH(_toDouble(json['x']), _toDouble(json['y']), _toDouble(json['width']), _toDouble(json['height'])),
+  );
+
+  static double _toDouble(Object? value) => (value as num).toDouble();
 }
 
 /// 리액션 전체 상태의 읽기 전용 사본: `{"assets/images/a.jpg": ["heart", "like"], ...}`

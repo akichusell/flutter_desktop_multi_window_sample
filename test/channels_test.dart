@@ -1,3 +1,4 @@
+import 'package:flutter/painting.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:multi_window_sample/common/channels.dart';
 import 'package:multi_window_sample/common/reaction.dart';
@@ -25,9 +26,11 @@ void main() {
     });
 
     test('anchor는 encode에 붙고 decode는 무시한다', () {
-      final raw = const DetailArgs('assets/images/a.jpg').encode(anchor: const ScreenAnchor(Offset(640, 400)));
+      final raw = const DetailArgs(
+        'assets/images/a.jpg',
+      ).encode(anchor: const ScreenAnchor(Rect.fromLTWH(100, 80, 840, 630)));
       expect(WindowArgs.decode(raw), isA<DetailArgs>());
-      expect(WindowArgs.anchorOf(raw)?.point, const Offset(640, 400));
+      expect(WindowArgs.anchorOf(raw)?.bounds, const Rect.fromLTWH(100, 80, 840, 630));
     });
 
     test('anchor가 없거나 메인 창이면 null', () {
@@ -38,7 +41,8 @@ void main() {
 
   group('ScreenAnchor', () {
     test('채널이 넘겨주는 int 좌표도 double로 읽는다', () {
-      expect(ScreenAnchor.fromJson(const {'x': 1440, 'y': -200}).point, const Offset(1440, -200));
+      final anchor = ScreenAnchor.fromJson(const {'x': 1440, 'y': -200, 'width': 840, 'height': 630});
+      expect(anchor.bounds, const Rect.fromLTWH(1440, -200, 840, 630));
     });
   });
 

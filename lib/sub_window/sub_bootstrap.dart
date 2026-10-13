@@ -23,9 +23,9 @@ Future<SubWindowState> setUpSubWindow(WindowController controller, WindowArgs ar
       case Method.init:
         await state.onInit(WindowArgs.fromJson(Map<String, dynamic>.from(call.arguments as Map)));
         await windowManager.setTitle(_titleOf(state.args));
-      case Method.moveToScreen:
+      case Method.placeBesideMain:
         final anchor = ScreenAnchor.fromJson(Map<String, dynamic>.from(call.arguments as Map));
-        await moveToScreenOf(anchor.point, onlyIfElsewhere: true);
+        await placeBesideMain(anchor.bounds);
       case Method.reactionsChanged:
         state.onReactionsChanged(Map<String, dynamic>.from(call.arguments as Map));
       case Method.shutdown:
@@ -44,9 +44,9 @@ Future<SubWindowState> setUpSubWindow(WindowController controller, WindowArgs ar
   final isDetail = args is DetailArgs;
   await windowManager.setSize(isDetail ? kDetailWindowSize : kCategoryWindowSize);
   await windowManager.setMinimumSize(isDetail ? kDetailWindowMinSize : kCategoryWindowMinSize);
-  // 메인 창이 있는 모니터 가운데. center()는 마우스 커서가 있는 모니터 기준이라 쓰지 않는다.
+  // 메인 창 옆. center()는 마우스 커서가 있는 모니터 기준이라 쓰지 않는다.
   final anchor = WindowArgs.anchorOf(controller.arguments);
-  await (anchor == null ? windowManager.center() : moveToScreenOf(anchor.point));
+  await (anchor == null ? windowManager.center() : placeBesideMain(anchor.bounds));
 
   await state.fetchAll();
   return state;

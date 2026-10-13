@@ -18,13 +18,45 @@ void main() {
     });
   });
 
-  group('centeredIn', () {
-    test('영역 가운데에 둔다', () {
-      expect(centeredIn(right, const Size(520, 390)), const Offset(1440 + 700, -200 + 345));
+  group('besideMain', () {
+    const area = Rect.fromLTWH(0, 25, 1440, 875);
+    const size = Size(520, 390);
+
+    test('오른쪽에 공간이 있으면 메인 오른쪽, 세로는 메인 중앙', () {
+      const main = Rect.fromLTWH(100, 200, 600, 400); // 오른쪽 끝 700 + 520 <= 1440
+      expect(besideMain(main, size, area), const Offset(700, 200 + 200 - 195));
+    });
+
+    test('오른쪽이 모자라면 메인 왼쪽', () {
+      const main = Rect.fromLTWH(600, 200, 600, 400); // 1200 + 520 > 1440, 600 - 520 >= 0
+      expect(besideMain(main, size, area), const Offset(80, 205));
+    });
+
+    test('양쪽 다 모자라면 영역 오른쪽 끝에 붙여 메인과 겹친다', () {
+      const main = Rect.fromLTWH(300, 200, 900, 400); // 1200 + 520 > 1440, 300 - 520 < 0
+      expect(besideMain(main, size, area), const Offset(1440 - 520, 205));
+    });
+
+    test('딱 맞으면 오른쪽에 둔다 (경계 포함)', () {
+      const main = Rect.fromLTWH(320, 200, 600, 400); // 920 + 520 == 1440
+      expect(besideMain(main, size, area).dx, 920);
+    });
+
+    test('세로가 영역을 넘으면 위·아래 끝에 맞춘다', () {
+      const nearTop = Rect.fromLTWH(100, 25, 600, 100); // 중앙 75 - 195 < 25
+      const nearBottom = Rect.fromLTWH(100, 800, 600, 100); // 중앙 850 + 195 > 900
+      expect(besideMain(nearTop, size, area).dy, 25);
+      expect(besideMain(nearBottom, size, area).dy, 900 - 390);
     });
 
     test('창이 영역보다 크면 좌상단을 영역에 맞춘다', () {
-      expect(centeredIn(left, const Size(2000, 1000)), const Offset(0, 25));
+      const main = Rect.fromLTWH(100, 200, 600, 400);
+      expect(besideMain(main, const Size(2000, 1000), area), const Offset(0, 25));
+    });
+
+    test('보조 모니터에서도 그 모니터 영역 기준으로 계산한다', () {
+      const main = Rect.fromLTWH(2900, 100, 400, 300); // 오른쪽 끝 3300 + 520 > 3360
+      expect(besideMain(main, size, right), const Offset(2900 - 520, 55));
     });
   });
 }
