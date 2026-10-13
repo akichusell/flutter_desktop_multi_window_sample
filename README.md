@@ -201,7 +201,7 @@ window_manager의 `destroy()`는 macOS에서 `NSApp.terminate`, Windows에서 `P
 
 | 패키지 | 버전 | 비고 |
 | --- | --- | --- |
-| [`desktop_multi_window`](https://pub.dev/packages/desktop_multi_window) | 0.3.1 + Skia 고정 | `packages/`에 vendoring ([체크 포인트](#체크-포인트) 참고) |
+| [`desktop_multi_window`](https://pub.dev/packages/desktop_multi_window) | 0.3.1 | pub.dev 원본 |
 | [`window_manager`](https://github.com/boyan01/window_manager) | 0.5.1 + 누수 수정 | 포크 고정 커밋 ([체크 포인트](#체크-포인트) 참고) |
 
 
