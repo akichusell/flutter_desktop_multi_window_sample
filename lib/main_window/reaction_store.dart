@@ -13,11 +13,11 @@ import 'listener_slot.dart';
 class ReactionStore extends ChangeNotifier {
   final _byImage = <String, Set<Reaction>>{};
 
-  /// 마지막으로 반응한 이미지 (메인 그리드에서 강조).
+  /// 마지막으로 반응한 이미지 (메인 그리드에서 이모지 펄스).
   String? get lastReactedImageId => _lastReactedImageId;
   String? _lastReactedImageId;
 
-  /// 강조 위젯이 등록하는 1개짜리 리스너 슬롯.
+  /// 펄스 위젯이 등록하는 1개짜리 리스너 슬롯.
   final lastReactedSlot = ListenerSlot<Reaction>('lastReacted');
 
   List<Reaction> reactionsOf(String imageId) {
@@ -40,7 +40,10 @@ class ReactionStore extends ChangeNotifier {
           log('receive', 'getAll');
           return snapshot.toJson();
         case Method.toggle:
-          _toggle(ToggleRequest.fromJson(Map<String, dynamic>.from(call.arguments as Map)));
+          final ToggleRequest(:imageId, :reaction) = ToggleRequest.fromJson(
+            Map<String, dynamic>.from(call.arguments as Map),
+          );
+          toggle(imageId, reaction);
           return null;
       }
       throw MissingPluginException('reaction_store.${call.method}');
@@ -48,14 +51,13 @@ class ReactionStore extends ChangeNotifier {
     log('channel', 'register reaction_store (unidirectional)');
   }
 
-  /// 같은 리액션을 다시 고르면 해제된다.
-  void _toggle(ToggleRequest request) {
-    final ToggleRequest(:imageId, :reaction) = request;
+  /// 같은 리액션을 다시 고르면 해제된다. 메인 그리드 우클릭은 직접, 서브 창은 채널을 거쳐 여기로 온다.
+  void toggle(String imageId, Reaction reaction) {
     final set = _byImage.putIfAbsent(imageId, () => {});
     if (!set.remove(reaction)) set.add(reaction);
     _lastReactedImageId = imageId;
     log(
-      'receive',
+      'store',
       'toggle ${fileNameOf(imageId)} ${reaction.name} -> [${reactionsOf(imageId).map((r) => r.name).join(', ')}]',
     );
 

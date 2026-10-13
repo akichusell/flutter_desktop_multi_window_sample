@@ -123,13 +123,21 @@ class _GridTile extends StatelessWidget {
       imageId: imageId,
       reactions: store.reactionsOf(imageId),
       onTap: () => pool.openDetail(imageId),
+      onSecondaryTapDown: (details) => _pickReaction(context, details.globalPosition),
       // 마지막으로 반응한 이미지가 바뀌면 이 위젯이 옛 타일에서 새 타일로 "교체"된다.
       overlay: isLast ? _LastReactedHighlight(imageId: imageId, store: store) : null,
     );
   }
+
+  /// 메인은 원본 소유자라 채널 없이 store를 바로 바꾼다.
+  Future<void> _pickReaction(BuildContext context, Offset position) async {
+    final picked = await showReactionPicker(context, position, store.reactionsOf(imageId));
+    if (picked == null) return;
+    store.toggle(imageId, picked);
+  }
 }
 
-/// 마지막으로 반응한 이미지 강조. 슬롯에 리스너를 등록해 리액션이 올 때마다 펄스를 그린다.
+/// 마지막으로 반응한 이미지 위의 이모지 펄스. 슬롯에 리스너를 등록해 리액션이 올 때마다 그린다.
 /// 교체 순서: 새 위젯 initState(register) → 옛 위젯 dispose(unregister). 로그로 확인한다.
 class _LastReactedHighlight extends StatefulWidget {
   const _LastReactedHighlight({required this.imageId, required this.store});
@@ -172,25 +180,19 @@ class _LastReactedHighlightState extends State<_LastReactedHighlight> with Singl
   @override
   Widget build(BuildContext context) {
     return IgnorePointer(
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          border: Border.all(color: Theme.of(context).colorScheme.primary, width: 4),
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: AnimatedBuilder(
-          animation: _pulse,
-          builder: (context, _) => _pulse.isAnimating
-              ? Center(
-                  child: Opacity(
-                    opacity: 1 - _pulse.value,
-                    child: Transform.scale(
-                      scale: 1 + _pulse.value * 1.5,
-                      child: Text(_reaction?.emoji ?? '', style: const TextStyle(fontSize: 40)),
-                    ),
+      child: AnimatedBuilder(
+        animation: _pulse,
+        builder: (context, _) => _pulse.isAnimating
+            ? Center(
+                child: Opacity(
+                  opacity: 1 - _pulse.value,
+                  child: Transform.scale(
+                    scale: 1 + _pulse.value * 1.5,
+                    child: Text(_reaction?.emoji ?? '', style: const TextStyle(fontSize: 40)),
                   ),
-                )
-              : const SizedBox.shrink(),
-        ),
+                ),
+              )
+            : const SizedBox.shrink(),
       ),
     );
   }

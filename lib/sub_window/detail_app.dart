@@ -46,20 +46,8 @@ class DetailApp extends StatelessWidget {
     );
   }
 
-  /// 리액션 5종 메뉴. 현재 붙어 있는 리액션은 체크 표시.
   Future<void> _showReactionMenu(BuildContext context, Offset position, List<Reaction> current) async {
-    final picked = await showMenu<Reaction>(
-      context: context,
-      position: RelativeRect.fromLTRB(position.dx, position.dy, position.dx, position.dy),
-      items: [
-        for (final reaction in Reaction.values)
-          CheckedPopupMenuItem(
-            value: reaction,
-            checked: current.contains(reaction),
-            child: Text('${reaction.emoji}  ${reaction.label}'),
-          ),
-      ],
-    );
+    final picked = await showReactionPicker(context, position, current);
     if (picked == null) return;
     await state.toggle(args.imageId, picked);
   }
