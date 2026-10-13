@@ -25,11 +25,12 @@ bool FlutterWindow::OnCreate() {
   if (!flutter_controller_->engine() || !flutter_controller_->view()) {
     return false;
   }
-  // 메인 엔진의 플러그인 등록
+  // Register plugins for the main engine.
   RegisterPlugins(flutter_controller_->engine());
 
-  // 서브 엔진 생성 콜백 (Slide 8)
-  // 엔진마다 플러그인 채널이 따로라서, 새 엔진이 생길 때마다 플러그인 전체를 다시 등록한다.
+  // Sub-engine creation callback
+  // Each engine has its own plugin channels, so re-register all plugins
+  // whenever a new engine is created.
   DesktopMultiWindowSetWindowCreatedCallback([](void* controller) {
     auto* flutter_view_controller = reinterpret_cast<flutter::FlutterViewController*>(controller);
     RegisterPlugins(flutter_view_controller->engine());
