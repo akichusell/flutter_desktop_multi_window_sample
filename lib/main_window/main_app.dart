@@ -123,7 +123,7 @@ class _GridTile extends StatelessWidget {
       imageId: imageId,
       reactions: store.reactionsOf(imageId),
       onTap: () => pool.openDetail(imageId),
-      onSecondaryTapDown: (details) => _pickReaction(context, details.globalPosition),
+      onSecondaryTapUp: (details) => _pickReaction(context, details.globalPosition),
       // 마지막으로 반응한 이미지가 바뀌면 이 위젯이 옛 타일에서 새 타일로 "교체"된다.
       overlay: isLast ? _LastReactedHighlight(imageId: imageId, store: store) : null,
     );

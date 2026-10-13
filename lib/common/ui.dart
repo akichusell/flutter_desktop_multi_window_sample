@@ -18,14 +18,14 @@ class ImageCard extends StatelessWidget {
     required this.imageId,
     required this.reactions,
     this.onTap,
-    this.onSecondaryTapDown,
+    this.onSecondaryTapUp,
     this.overlay,
   });
 
   final String imageId;
   final List<Reaction> reactions;
   final VoidCallback? onTap;
-  final GestureTapDownCallback? onSecondaryTapDown;
+  final GestureTapUpCallback? onSecondaryTapUp;
   final Widget? overlay;
 
   @override
@@ -36,7 +36,7 @@ class ImageCard extends StatelessWidget {
       elevation: 1,
       child: InkWell(
         onTap: onTap,
-        onSecondaryTapDown: onSecondaryTapDown,
+        onSecondaryTapUp: onSecondaryTapUp,
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -169,13 +169,13 @@ class _ReactionPickerButton extends StatelessWidget {
   }
 }
 
-/// 창 크기. 메인 > 카테고리 > 상세 순으로 작게 열고, 그리드 창의 최소 크기는 4열 타일이 너무 작아지지 않게 정한다.
-const kMainWindowSize = Size(1100, 780);
-const kMainWindowMinSize = Size(720, 540);
-const kCategoryWindowSize = Size(960, 680);
-const kCategoryWindowMinSize = Size(640, 480);
-const kDetailWindowSize = Size(640, 500);
-const kDetailWindowMinSize = Size(480, 400);
+/// 창 크기. 기본 크기는 모두 4:3이고 메인 > 카테고리 > 상세 순으로 작게 연다. 최소 크기는 타일이 너무 작아지지 않게 정한다.
+const kMainWindowSize = Size(840, 630);
+const kMainWindowMinSize = Size(600, 450);
+const kCategoryWindowSize = Size(720, 540);
+const kCategoryWindowMinSize = Size(560, 420);
+const kDetailWindowSize = Size(520, 390);
+const kDetailWindowMinSize = Size(400, 300);
 
 /// 이미지 그리드. 열 수를 고정해 창 크기에 비례해서 타일이 연속적으로 커지고 작아진다.
 class ImageGrid extends StatelessWidget {
@@ -189,7 +189,7 @@ class ImageGrid extends StatelessWidget {
     return GridView.builder(
       padding: const EdgeInsets.all(20),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
+        crossAxisCount: 3,
         mainAxisSpacing: 16,
         crossAxisSpacing: 16,
         childAspectRatio: 4 / 3,
