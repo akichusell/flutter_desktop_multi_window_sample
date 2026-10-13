@@ -10,7 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   desktop_multi_window: 0.3.1
-  # pub.dev 0.5.2는 macOS에서 닫힌 서브 창의 엔진을 해제하지 못한다 (README "알아 두면 좋은 함정" 참고).
+  # pub.dev 0.5.2는 macOS에서 닫힌 서브 창의 엔진을 해제하지 못한다 (README "체크 포인트" 참고).
   # desktop_multi_window README가 권하는 포크를 고정 커밋으로 쓴다.
   window_manager:
     git:

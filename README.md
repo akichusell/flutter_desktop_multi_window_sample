@@ -139,6 +139,36 @@ flowchart LR
 
 ## 체크 포인트
 
+### Windows: Flutter 3.47.0부터 Impeller가 기본 렌더러가 되어 서브 창 생성 중 메인 UI가 멈춘다
+
+Flutter 3.47.0부터 Windows의 기본 렌더러가 Skia에서 Impeller(OpenGLES)로 바뀌었다. Impeller에서는 서브 엔진 하나를
+만드는 데 2초 넘게 걸린다. 그동안 **서브 창은 늦게 뜨고, 메인 창 UI도 통째로 멈춘다**. release 빌드에서도 똑같다.
+
+| 렌더러 | `WindowController.create` | 메인 UI 정지 |
+| --- | --- | --- |
+| Impeller (3.47.0+ 기본값) | 약 2200ms | 약 2200ms |
+| Skia | 10~15ms | 없음 |
+
+(release, `REUSE_WINDOWS=false`로 상세 창을 열 때 측정)
+
+메인까지 멈추는 이유는 다음과 같다.
+
+1. 메인 엔진은 기본 스레드 정책이라 UI 스레드가 플랫폼 스레드와 합쳐져 있다.
+2. `desktop_multi_window`는 `createWindow` 채널 핸들러 안에서, 즉 플랫폼 스레드에서 서브 창의 `FlutterViewController`를
+   **동기로** 만든다.
+3. 이 생성자는 서브 엔진의 렌더링 준비가 끝나야 돌아오는데, Impeller는 여기서 2초 넘게 걸린다. 그동안 메인의 Dart 코드와
+   프레임 처리가 모두 멈춘다.
+
+서브 엔진의 `RunOnSeparateThread`는 서브 자신의 UI 스레드만 분리할 뿐이라 도움이 되지 않고, Dart 코드로도 피할 수 없다.
+창 재사용(3번)을 켜 두면 각 창을 처음 열 때만 비용이 들지만, 그 한 번도 메인이 2초 넘게 멈춘다.
+
+해결 방법은 둘 중 하나다.
+
+- **Flutter를 3.44.x 이하로 내린다.** Skia가 기본값이던 마지막 stable 계열이다. 단, 3.44 이하에는 아래의
+  `set_impeller_switch` API가 없다.
+- **`desktop_multi_window`를 vendoring해서 렌더러를 Skia로 고정한다.** 서브 엔진의 `DartProject`는 플러그인 안에서
+  만들어지고, release 빌드에서는 환경변수로 엔진 스위치를 넘길 수 없다. 그래서 플러그인 코드를 가져와 직접 고쳐야 한다.
+
 ### macOS: pub.dev의 window_manager로는 닫은 서브 창의 엔진이 해제되지 않는다
 
 window_manager pub.dev 최신 버전(0.5.2)은 자기 창을 강한 참조로 들고 있다. 서브 엔진에 등록된 window_manager가 서브 창을
@@ -171,7 +201,7 @@ window_manager의 `destroy()`는 macOS에서 `NSApp.terminate`, Windows에서 `P
 
 | 패키지 | 버전 | 비고 |
 | --- | --- | --- |
-| [`desktop_multi_window`](https://pub.dev/packages/desktop_multi_window) | 0.3.1 | pub.dev 원본 |
+| [`desktop_multi_window`](https://pub.dev/packages/desktop_multi_window) | 0.3.1 + Skia 고정 | `packages/`에 vendoring ([체크 포인트](#체크-포인트) 참고) |
 | [`window_manager`](https://github.com/boyan01/window_manager) | 0.5.1 + 누수 수정 | 포크 고정 커밋 ([체크 포인트](#체크-포인트) 참고) |
 
 
