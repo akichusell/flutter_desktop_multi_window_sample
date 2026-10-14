@@ -14,6 +14,11 @@ Flutter Desktop(Windows·macOS)에서 창을 여러 개 띄우면 내부에서 �
 
 어느 창에서 리액션을 바꾸든 모든 창이 바로 갱신된다. 데이터는 메모리에만 있고 앱을 끄면 초기화된다.
 
+Windows에서는 모든 창이 OS 타이틀바를 숨기고 Flutter로 그린 타이틀바(제목 + 최소화·최대화·닫기)를 쓴다.
+제목 영역을 끌면 창이 움직이고 더블클릭하면 최대화된다. 위쪽 가장자리 리사이즈는 OS 테두리가 없어서
+`VirtualWindowFrame`이 Flutter 쪽에서 대신 받는다. 엔진마다 자기 창에 `setTitleBarStyle(hidden)`을 걸어야 한다
+([`title_bar.dart`](lib/common/title_bar.dart)). macOS는 기본 타이틀바를 그대로 쓴다.
+
 ## 핵심 설계 포인트
 
 1. **창 하나 = 엔진 하나.** 엔진마다 `main()`이 처음부터 다시 실행되고, Dart 힙도 따로다.

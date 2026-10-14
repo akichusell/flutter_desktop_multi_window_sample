@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../common/channels.dart';
 import '../common/reaction.dart';
+import '../common/title_bar.dart';
 import '../common/ui.dart';
+import 'sub_bootstrap.dart';
 import 'sub_window_state.dart';
 
 /// 상세 창: 이미지를 크게 보여 주고, 우클릭 메뉴로 리액션을 토글한다.
@@ -23,22 +25,26 @@ class DetailApp extends StatelessWidget {
           listenable: state,
           builder: (context, _) {
             final reactions = state.reactions.of(args.imageId);
-            return Column(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onSecondaryTapDown: (details) => _showReactionMenu(context, details.globalPosition, reactions),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: Image.asset(args.imageId, fit: BoxFit.contain),
+            return WindowFrame(
+              title: windowTitleOf(state.args),
+              brightness: Brightness.dark,
+              child: Column(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onSecondaryTapDown: (details) => _showReactionMenu(context, details.globalPosition, reactions),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: Image.asset(args.imageId, fit: BoxFit.contain),
+                        ),
                       ),
                     ),
                   ),
-                ),
-                _ReactionBar(reactions),
-              ],
+                  _ReactionBar(reactions),
+                ],
+              ),
             );
           },
         ),

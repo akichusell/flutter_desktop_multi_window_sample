@@ -6,6 +6,7 @@ import '../common/demo_flags.dart';
 import '../common/gallery_images.dart';
 import '../common/log.dart';
 import '../common/reaction.dart';
+import '../common/title_bar.dart';
 import '../common/ui.dart';
 import 'reaction_store.dart';
 import 'window_pool.dart';
@@ -20,7 +21,8 @@ Future<MainApp> setUpMainWindow() async {
   store.addListener(kPushToHiddenWindows ? pool.pushToAll : pool.pushToVisible);
 
   await windowManager.ensureInitialized();
-  await windowManager.setTitle('Multi Window Sample');
+  await hideNativeTitleBar();
+  await windowManager.setTitle(kMainWindowTitle);
   await windowManager.setSize(kMainWindowSize);
   await windowManager.setMinimumSize(kMainWindowMinSize);
   await windowManager.setPreventClose(true); // 닫기 전에 서브 엔진부터 정리한다
@@ -28,6 +30,8 @@ Future<MainApp> setUpMainWindow() async {
 
   return MainApp(images: images, store: store, pool: pool);
 }
+
+const kMainWindowTitle = 'Multi Window Sample';
 
 /// 메인 창을 닫으면 앱 전체를 종료한다. 숨겨 둔 서브 창이 있어도 프로세스가 남지 않게.
 class _QuitOnMainClose with WindowListener {
@@ -59,16 +63,19 @@ class MainApp extends StatelessWidget {
       home: Scaffold(
         body: ListenableBuilder(
           listenable: store,
-          builder: (context, _) => Column(
-            children: [
-              _Header(store: store, onReactionTap: pool.openCategory),
-              Expanded(
-                child: ImageGrid(
-                  itemCount: images.length,
-                  itemBuilder: (context, i) => _GridTile(imageId: images[i], store: store, pool: pool),
+          builder: (context, _) => WindowFrame(
+            title: kMainWindowTitle,
+            child: Column(
+              children: [
+                _Header(store: store, onReactionTap: pool.openCategory),
+                Expanded(
+                  child: ImageGrid(
+                    itemCount: images.length,
+                    itemBuilder: (context, i) => _GridTile(imageId: images[i], store: store, pool: pool),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

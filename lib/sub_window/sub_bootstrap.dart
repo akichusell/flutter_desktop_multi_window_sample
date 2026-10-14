@@ -9,6 +9,7 @@ import '../common/channels.dart';
 import '../common/demo_flags.dart';
 import '../common/gallery_images.dart';
 import '../common/log.dart';
+import '../common/title_bar.dart';
 import '../common/ui.dart';
 import 'sub_window_state.dart';
 import 'window_placement.dart';
@@ -22,7 +23,7 @@ Future<SubWindowState> setUpSubWindow(WindowController controller, WindowArgs ar
     switch (call.method) {
       case Method.init:
         await state.onInit(WindowArgs.fromJson(Map<String, dynamic>.from(call.arguments as Map)));
-        await windowManager.setTitle(_titleOf(state.args));
+        await windowManager.setTitle(windowTitleOf(state.args));
       case Method.placeBesideMain:
         final anchor = ScreenAnchor.fromJson(Map<String, dynamic>.from(call.arguments as Map));
         await placeBesideMain(anchor.bounds);
@@ -38,9 +39,10 @@ Future<SubWindowState> setUpSubWindow(WindowController controller, WindowArgs ar
 
   // 2) 이 엔진에 등록된 window_manager는 자기 창만 제어한다.
   await windowManager.ensureInitialized();
+  await hideNativeTitleBar();
   await windowManager.setPreventClose(kReuseWindows);
   windowManager.addListener(_CloseToHide(controller.windowId));
-  await windowManager.setTitle(_titleOf(args));
+  await windowManager.setTitle(windowTitleOf(args));
   final isDetail = args is DetailArgs;
   await windowManager.setSize(isDetail ? kDetailWindowSize : kCategoryWindowSize);
   await windowManager.setMinimumSize(isDetail ? kDetailWindowMinSize : kCategoryWindowMinSize);
@@ -59,7 +61,8 @@ Future<void> showAfterFirstFrame() async {
   log('lifecycle', 'first frame -> show');
 }
 
-String _titleOf(WindowArgs args) => switch (args) {
+/// OS 창 제목이자 커스텀 타이틀바(Windows)에 그리는 제목.
+String windowTitleOf(WindowArgs args) => switch (args) {
   DetailArgs(:final imageId) => fileNameOf(imageId),
   CategoryArgs(:final reaction) => '${reaction.emoji} ${reaction.label}',
 };
