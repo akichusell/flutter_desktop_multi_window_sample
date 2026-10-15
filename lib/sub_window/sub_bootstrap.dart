@@ -61,7 +61,7 @@ Future<void> showAfterFirstFrame() async {
   log('lifecycle', 'first frame -> show');
 }
 
-/// OS 창 제목이자 커스텀 타이틀바(Windows)에 그리는 제목.
+/// OS 창 제목이자 커스텀 타이틀바(Windows·macOS)에 그리는 제목.
 String windowTitleOf(WindowArgs args) => switch (args) {
   DetailArgs(:final imageId) => fileNameOf(imageId),
   CategoryArgs(:final reaction) => '${reaction.emoji} ${reaction.label}',
