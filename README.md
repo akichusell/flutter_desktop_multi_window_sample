@@ -186,6 +186,29 @@ Flutter 3.47.0부터 Windows의 기본 렌더러가 Skia에서 Impeller(OpenGLES
 - **`desktop_multi_window`를 vendoring해서 렌더러를 Skia로 고정한다.** 서브 엔진의 `DartProject`는 플러그인 안에서
   만들어지고, release 빌드에서는 환경변수로 엔진 스위치를 넘길 수 없다. 그래서 플러그인 코드를 가져와 직접 고쳐야 한다.
 
+이 샘플은 두 번째 방법을 쓴다. pub.dev 0.3.1을 `packages/desktop_multi_window`로 복사하고(`example/` 제외), 서브 엔진
+생성부에 한 줄을 넣었다. 모든 창이 같은 렌더러로 그려지도록 메인 엔진(`windows/runner/main.cpp`)에도 같은 줄을 넣었다.
+원본과 다른 곳은 이 한 줄(`[sample patch]` 주석)과, path 의존성으로 쓰기 위해 `pubspec.yaml`에서 지운
+`resolution: workspace` 한 줄뿐이다.
+
+```cpp
+// packages/desktop_multi_window/windows/flutter_window.cc  FlutterWindow::OnCreate()
+project.set_ui_thread_policy(flutter::UIThreadPolicy::RunOnSeparateThread);
+project.set_impeller_switch(flutter::ImpellerSwitch::Disabled);  // [sample patch]
+```
+
+```yaml
+# pubspec.yaml
+desktop_multi_window:
+  path: packages/desktop_multi_window
+```
+
+실행 로그에 `Using the Impeller rendering backend`가 찍히면 그 엔진은 Impeller로 돌고 있는 것이다. 패치 후에는 어느
+엔진에서도 이 로그가 찍히지 않는다.
+
+> C++ 파일에는 한글 주석을 넣지 않는다. 한국어 코드페이지의 MSVC는 BOM 없는 UTF-8 파일에서 C4819 경고를 내고,
+> 플러그인 빌드에도 `/WX`가 적용되어 에러가 된다.
+
 ### macOS: pub.dev의 window_manager로는 닫은 서브 창의 엔진이 해제되지 않는다
 
 window_manager pub.dev 최신 버전(0.5.2)은 자기 창을 강한 참조로 들고 있다. 서브 엔진에 등록된 window_manager가 서브 창을
@@ -218,7 +241,7 @@ window_manager의 `destroy()`는 macOS에서 `NSApp.terminate`, Windows에서 `P
 
 | 패키지 | 버전 | 비고 |
 | --- | --- | --- |
-| [`desktop_multi_window`](https://pub.dev/packages/desktop_multi_window) | 0.3.1 | pub.dev 원본 |
+| [`desktop_multi_window`](https://pub.dev/packages/desktop_multi_window) | 0.3.1 + Skia 고정 | `packages/`에 vendoring ([체크 포인트](#체크-포인트) 참고) |
 | [`window_manager`](https://github.com/boyan01/window_manager) | 0.5.1 + 누수 수정 | 포크 고정 커밋 ([체크 포인트](#체크-포인트) 참고) |
 | [`screen_retriever`](https://pub.dev/packages/screen_retriever) | ^0.2.2 | window_manager 의존성. 모니터 작업 영역 조회 |
 
