@@ -17,6 +17,8 @@ import 'window_placement.dart';
 /// 서브 엔진 초기화. 상세·카테고리 창이 같은 순서로 시작한다.
 Future<SubWindowState> setUpSubWindow(WindowController controller, WindowArgs args) async {
   final state = SubWindowState(args, await loadGalleryImages());
+  final isDetail = args is DetailArgs;
+  final placement = isDetail ? besideMain : belowMain;
 
   // 1) 이 창의 WindowController 채널 핸들러. 앱 시작 시 한 번만 등록한다.
   await controller.setWindowMethodHandler((call) async {
@@ -24,9 +26,9 @@ Future<SubWindowState> setUpSubWindow(WindowController controller, WindowArgs ar
       case Method.init:
         await state.onInit(WindowArgs.fromJson(Map<String, dynamic>.from(call.arguments as Map)));
         await windowManager.setTitle(windowTitleOf(state.args));
-      case Method.placeBesideMain:
+      case Method.placeNearMain:
         final anchor = ScreenAnchor.fromJson(Map<String, dynamic>.from(call.arguments as Map));
-        await placeBesideMain(anchor.bounds);
+        await placeNearMain(anchor.bounds, placement);
       case Method.reactionsChanged:
         state.onReactionsChanged(Map<String, dynamic>.from(call.arguments as Map));
       case Method.shutdown:
@@ -43,12 +45,12 @@ Future<SubWindowState> setUpSubWindow(WindowController controller, WindowArgs ar
   await windowManager.setPreventClose(kReuseWindows);
   windowManager.addListener(_CloseToHide(controller.windowId));
   await windowManager.setTitle(windowTitleOf(args));
-  final isDetail = args is DetailArgs;
-  await windowManager.setSize(isDetail ? kDetailWindowSize : kCategoryWindowSize);
-  await windowManager.setMinimumSize(isDetail ? kDetailWindowMinSize : kCategoryWindowMinSize);
-  // 메인 창 옆. center()는 마우스 커서가 있는 모니터 기준이라 쓰지 않는다.
+  final minSize = isDetail ? kDetailWindowMinSize : kCategoryWindowMinSize;
+  await windowManager.setMinimumSize(minSize);
+  await windowManager.setSize(minSize);
+  // 메인 창 근처. center()는 마우스 커서가 있는 모니터 기준이라 쓰지 않는다.
   final anchor = WindowArgs.anchorOf(controller.arguments);
-  await (anchor == null ? windowManager.center() : placeBesideMain(anchor.bounds));
+  await (anchor == null ? windowManager.center() : placeNearMain(anchor.bounds, placement));
 
   await state.fetchAll();
   return state;

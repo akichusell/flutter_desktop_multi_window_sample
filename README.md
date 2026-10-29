@@ -71,7 +71,7 @@ flowchart LR
 | --- | --- | --- | --- | --- |
 | `reaction_store` | 메인 | unidirectional | 서브 | `getAll`, `toggle` |
 | `window_router` | 메인 | unidirectional | 서브 | `openDetail`, `windowHidden` |
-| 각 서브 창의 `WindowController` 채널 | 서브 | 패키지 기본 | 메인 | `init`, `placeBesideMain`, `reactionsChanged`, `shutdown` |
+| 각 서브 창의 `WindowController` 채널 | 서브 | 패키지 기본 | 메인 | `init`, `placeNearMain`, `reactionsChanged`, `shutdown` |
 
 - 엔진 경계를 넘는 값은 `Map`·`List`·`String`뿐이다. 객체는 `toJson()`으로 보내고, 받는 쪽에서
   `Map<String, dynamic>.from(...)`으로 바꾼 뒤 `fromJson()`한다.
@@ -91,18 +91,20 @@ flowchart LR
 - 서브 창은 `hiddenAtLaunch: true`로 숨긴 채 만들고, 첫 프레임이 그려진 뒤 스스로 `show()`한다. 빈 창이 먼저 보이지 않는다.
 - X를 숨김으로 바꾸려면 window_manager의 `setPreventClose(true)`를 켜고 `onWindowClose`에서 `hide()`를 부른다.
   이 경로는 네이티브(X) → Dart → 네이티브(hide)를 한 번 왕복한다.
-- 서브 창은 메인 창 옆에 뜬다. `windowManager.center()`는 마우스 커서가 있는 모니터 기준이라 쓰지 않는다.
-  - 가로는 메인 창이 있는 모니터의 작업 영역(메뉴 막대·Dock·작업 표시줄 제외) 안에 들어가는 첫 자리:
-    ① 메인 오른쪽 ② 메인 왼쪽 ③ 모니터 오른쪽 끝(메인과 겹친다). 간격 없이 메인 창 테두리에 붙는다.
-  - 세로는 메인 중앙에 맞추고, 모니터 위·아래를 넘으면 끝에 맞춘다.
+- 서브 창은 처음 뜰 때 최소 크기로 열고, 메인 창 근처에 뜬다. `windowManager.center()`는 마우스 커서가 있는 모니터
+  기준이라 쓰지 않는다. 자리는 메인 창이 있는 모니터의 작업 영역(메뉴 막대·Dock·작업 표시줄 제외) 안에 들어가는 첫
+  자리이고, 간격 없이 메인 창 테두리에 붙는다.
+  - 상세 창: 가로는 ① 메인 오른쪽 ② 메인 왼쪽 ③ 모니터 오른쪽 끝(메인과 겹친다). 세로는 메인 중앙에 맞춘다.
+  - 카테고리 창: 세로는 ① 메인 아래 ② 메인 위 ③ 모니터 아래 끝(메인과 겹친다). 가로는 메인 중앙에 맞춘다.
+  - 중앙에 맞춘 축이 모니터를 넘으면 끝에 맞춘다.
   - 생성: 메인이 자기 창 영역을 `anchor`로 넘기고, 서브가 screen_retriever로 메인 중심이 있는 모니터를 찾아 자리를 잡은 뒤
     보여 준다.
-  - 재사용: 메인이 `show()` 전에 `placeBesideMain`을 보낸다. 숨기기 전 자리나 사용자가 옮겨 둔 자리와 상관없이
+  - 재사용: 메인이 `show()` 전에 `placeNearMain`을 보낸다. 숨기기 전 자리나 사용자가 옮겨 둔 자리와 상관없이
     지금 메인 창 위치 기준으로 다시 자리 잡은 뒤 보인다.
   - window_manager·screen_retriever 모두 주 모니터 좌상단 기준 논리 좌표를 쓰므로 플러그인 수정 없이 Dart에서 처리한다.
 
 → `sub_window/sub_bootstrap.dart` `_CloseToHide`, `showAfterFirstFrame`, `main_window/window_pool.dart` `_reshow`,
-`sub_window/window_placement.dart` `placeBesideMain`, `besideMain`
+`sub_window/window_placement.dart` `placeNearMain`, `besideMain`, `belowMain`
 
 ### 4. 플러그인은 엔진마다 다시 등록한다
 

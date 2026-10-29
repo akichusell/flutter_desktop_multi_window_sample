@@ -87,7 +87,7 @@ class WindowPool {
   Future<void> _reshow(_SubWindow window) async {
     final controller = await window.ready;
     if (window.hidden && !kPushToHiddenWindows) await _push([window]); // 숨어 있는 동안 못 받은 변경
-    await _invoke(window, Method.placeBesideMain, (await _mainAnchor()).toJson());
+    await _invoke(window, Method.placeNearMain, (await _mainAnchor()).toJson());
     window.hidden = false;
     await controller.show();
     log('lifecycle', 'reuse show ${window.args.tag} (window ${controller.windowId})');

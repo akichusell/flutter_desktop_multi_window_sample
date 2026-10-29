@@ -28,7 +28,7 @@ abstract final class Method {
 
   // 각 서브 창의 WindowController 채널 (메인 → 서브)
   static const init = 'init';
-  static const placeBesideMain = 'placeBesideMain';
+  static const placeNearMain = 'placeNearMain';
   static const reactionsChanged = 'reactionsChanged';
   static const shutdown = 'shutdown';
 }
@@ -108,7 +108,7 @@ class ToggleRequest {
 }
 
 /// 서브 창 위치의 기준 = 메인 창 영역: `{"x": 100.0, "y": 80.0, "width": 840.0, "height": 630.0}`
-/// 생성 시에는 창 arguments의 `anchor`로, 숨긴 창을 다시 보여 줄 때는 `placeBesideMain` 페이로드로 넘긴다.
+/// 생성 시에는 창 arguments의 `anchor`로, 숨긴 창을 다시 보여 줄 때는 `placeNearMain` 페이로드로 넘긴다.
 @immutable
 class ScreenAnchor {
   const ScreenAnchor(this.bounds);
